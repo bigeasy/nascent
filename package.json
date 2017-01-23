@@ -1,9 +1,9 @@
 {
-    "name":                 "conduit",
+    "name":                 "nascent",
     "version":              "0.0.0",
     "description":
 
-      "WebSockets with back-pressure.",
+      "Projects on the rise.",
 
     "keywords":
     [
@@ -23,10 +23,7 @@
     },
     "devDependencies":
     {
-                            "faye-websocket":               "0.11.0",
-                            "proof":                        "1.2.x",
-                            "websocket":                    "1.0.23",
-                            "ws":                           "1.1.1"
+                            "proof":                        "1.2.x"
     },
     "main":                 "conduit",
     "scripts":
