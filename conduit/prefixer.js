@@ -4,7 +4,7 @@ function Prefixer (prefix) {
     this._prefix = coalesce(prefix, '_')
 }
 
-Prefixer.prototype.map = function (envelope, object) {
+Prefixer.prototype.map = function (envelope) {
     return this._prefix + envelope.cookie
 }
 
