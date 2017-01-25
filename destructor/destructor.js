@@ -1,4 +1,4 @@
-var coalesce = require('../coalesce')
+var coalesce = require('nascent.coalesce')
 var DEFAULT = {
     interrupt: require('interrupt').createInterrupter('nascent.destructor')
 }

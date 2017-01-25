@@ -21,6 +21,7 @@
     "dependencies":
     {
                             "interrupt":                    "2.1.x",
+                            "nascent.coalesce":             "0.0.0",
                             "operation":                    "1.1.x"
     },
     "devDependencies":
