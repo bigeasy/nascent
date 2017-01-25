@@ -3,7 +3,7 @@
     "version":              "9.9.9",
     "description":
 
-      "JSON as a network packet.",
+      "Good 'ol SQL COALESCE to select the first non-`null` value from a list or else return a proper `null`.",
 
     "keywords":
     [
