@@ -1,4 +1,5 @@
 /node_modules
 /.proof.out
 /coverage
+/*/coverage
 /*/node_modules
