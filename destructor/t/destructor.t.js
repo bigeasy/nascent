@@ -1,4 +1,4 @@
-require('proof/redux')(4, prove)
+require('proof/redux')(5, prove)
 
 function prove (assert) {
     var Destructor = require('..')
@@ -7,9 +7,13 @@ function prove (assert) {
     destructor.addJanitor('janitor', function () {
         assert(true, 'janitor ran')
     })
+    destructor.addJanitor('invoked', function () {
+        assert(true, 'janitor invoked')
+    })
     destructor.addJanitor('removed', function () {
         throw new Error('should not run')
     })
+    destructor.invokeJanitor('invoked')
     destructor.removeJanitor('removed')
     assert(destructor.getJanitors(), [ 'janitor' ], 'removed')
 

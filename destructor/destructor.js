@@ -29,6 +29,11 @@ Destructor.prototype.addJanitor = function (name, operation) {
     this._janitors[name] = new Operation(operation)
 }
 
+Destructor.prototype.invokeJanitor = function (name) {
+    this._janitors[name].apply([])
+    delete this._janitors[name]
+}
+
 Destructor.prototype.removeJanitor = function (name) {
     delete this._janitors[name]
 }
