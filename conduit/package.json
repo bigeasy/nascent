@@ -22,10 +22,13 @@
     {
                             "cadence": "1.0.x",
                             "cliffhanger": "1.2.x",
-                            "procession": "0.0.13"
+                            "procession": "0.0.13",
+                            "monotonic": "2.0.x",
+                            "staccato": "1.1.x"
     },
     "devDependencies":
     {
+                            "delta": "1.1.x",
                             "proof": "1.2.x"
     },
     "main":                 "messenger",

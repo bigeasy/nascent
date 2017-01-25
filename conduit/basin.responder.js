@@ -21,4 +21,4 @@ Responder.prototype.enqueue = cadence(function (async, envelope) {
     })
 })
 
-exports.Responder = Responder
+module.exports = Responder

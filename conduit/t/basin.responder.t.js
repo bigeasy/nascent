@@ -1,7 +1,7 @@
 require('proof/redux')(2, require('cadence')(prove))
 
 function prove (async, assert) {
-    var Basin = require('../basin.responder')
+    var Basin = { Responder: require('../basin.responder') }
     var responder = new Basin.Responder({
         request: function (envelope, callback) {
             callback(null, envelope.body + 1)

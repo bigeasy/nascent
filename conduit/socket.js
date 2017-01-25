@@ -1,3 +1,7 @@
+var cadence = require('cadence')
+var Spigot = { Generator: require('./spigot.generator') }
+var Basin = { Responder: require('./basin.responder') }
+
 function Socket (multiplexer, id) {
     this._multiplexer = multiplexer
     this._id = id
@@ -13,7 +17,7 @@ Socket.prototype.request = cadence(function (async, envelope) {
                 to: this._id,
                 from: this._id,
                 body: null
-            }, async())
+            }) + '\n', async())
         } else if (Buffer.isBuffer(envelope.body)) {
             this._multiplexer._output.write(JSON.stringify({
                 cookie: 'chunk',
