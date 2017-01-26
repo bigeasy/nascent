@@ -26,7 +26,11 @@ Destructor.prototype.destroy = function (error) {
 }
 
 Destructor.prototype.addJanitor = function (name, operation) {
-    this._janitors[name] = new Operation(operation)
+    if (this.destroyed) {
+        operation.apply([])
+    } else {
+        this._janitors[name] = new Operation(operation)
+    }
 }
 
 Destructor.prototype.invokeJanitor = function (name) {

@@ -1,4 +1,4 @@
-require('proof/redux')(5, prove)
+require('proof/redux')(6, prove)
 
 function prove (assert) {
     var Destructor = require('..')
@@ -30,4 +30,8 @@ function prove (assert) {
     }
 
     destructor.destroy()
+
+    destructor.addJanitor('destroyed', function () {
+        assert(true, 'run after destroyed')
+    })
 }
