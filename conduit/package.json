@@ -26,7 +26,7 @@
                             "monotonic":                    "2.0.x",
                             "nascent.destructor":           "0.0.3",
                             "procession":                   "0.0.13",
-                            "staccato":                     "2.0.x"
+                            "staccato":                     "2.0.2"
     },
     "devDependencies":
     {
