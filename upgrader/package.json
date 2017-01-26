@@ -3,7 +3,7 @@
     "version":              "9.9.9",
     "description":
 
-      "Good 'ol SQL COALESCE to select the first non-`null` value from a list or else return a proper `null`.",
+      "Upgrade HTTP sockets to raw sockets and do what you want with them. Scandalous! It's true.",
 
     "keywords":
     [
