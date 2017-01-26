@@ -1,0 +1,33 @@
+{
+    "name":                 "nascent.upgrader",
+    "version":              "9.9.9",
+    "description":
+
+      "Good 'ol SQL COALESCE to select the first non-`null` value from a list or else return a proper `null`.",
+
+    "keywords":
+    [
+                            "json"
+    ],
+    "author":               "Alan Gutierrez <alan@prettyrobots.com>",
+    "homepage":             "http://bigeasy.github.com/nascent",
+    "bugs":                 "http://bigeasy.github.com/nascent/issues",
+    "license":              "MIT",
+    "repository":
+    {
+                            "url": "git://github.com/bigeasy/nascent.git",
+                            "type": "git"
+    },
+    "dependencies":
+    {
+    },
+    "devDependencies":
+    {
+                            "proof": "1.2.x"
+    },
+    "main":                 "upgrader",
+    "scripts":
+    {
+                            "test": "proof test */*.t.js"
+    }
+}
