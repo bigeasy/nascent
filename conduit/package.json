@@ -22,7 +22,9 @@
     {
                             "cadence":                      "1.0.x",
                             "cliffhanger":                  "1.2.x",
+                            "interrupt":                    "2.2.x",
                             "monotonic":                    "2.0.x",
+                            "nascent.destructor":           "0.0.3",
                             "procession":                   "0.0.13",
                             "staccato":                     "2.0.x"
     },

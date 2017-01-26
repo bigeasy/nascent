@@ -5,14 +5,19 @@ var Staccato = require('staccato')
 var Jacket = require('../jacket')
 var Socket = require('./socket')
 var Monotonic = require('monotonic').asString
+var Destructor = require('nascent.destructor')
+var interrupt = require('interrupt').createInterrupter('conduit.muliplexer')
 
 function Multiplexer (reactor, input, output) {
     this._reactor = reactor
     this._record = new Jacket
-    this._output = new Staccato(output)
-    this._input = new Staccato(input)
+    this._output = new Staccato.Writable(output)
+    this._input = new Staccato.Readable(input)
     this._sockets = {}
     this._identifier = '0'
+    this._destructor = new Destructor(interrupt)
+    this._destructor.addJanitor('unlisten', this._unlisten.bind(this))
+    this._destructor.addJanitor('mark', this._destroyed.bind(this))
 }
 
 Multiplexer.prototype.listen = cadence(function (async, buffer) {
@@ -22,6 +27,19 @@ Multiplexer.prototype.listen = cadence(function (async, buffer) {
         this._read(async())
     })
 })
+
+Multiplexer.prototype._destroyed = function () {
+    this.destroyed = true
+}
+
+Multiplexer.prototype._unlisten = function () {
+    this._output.destroy()
+    this._input.destroy()
+}
+
+Multiplexer.prototype.destroy = function () {
+    this._destructor.destroy()
+}
 
 Multiplexer.prototype.connect = cadence(function (async) {
     var id = this._identifier = Monotonic.increment(this._identifier, 0)

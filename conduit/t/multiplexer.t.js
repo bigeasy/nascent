@@ -18,11 +18,14 @@ function prove (async, assert) {
         delta(async()).ee(input).on('readable')
         multiplexers[1].connect(async())
     }, function () {
+        multiplexers[0].listen(buffer, async())
         var buffer = input.read()
-        async(function () {
-            multiplexers[0].listen(buffer, async())
-        }, function () {
+        async([function () {
             multiplexers[0].destroy()
+        }, function (error) {
+            console.log(error.stack)
+        }], function () {
+            assert(multiplexers[0].destroyed, 'destroyed')
         })
     })
 }
