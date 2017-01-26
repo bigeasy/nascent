@@ -1,4 +1,4 @@
-require('proof/redux')(3, prove)
+require('proof/redux')(4, prove)
 
 function prove (assert) {
     var Jacket = require('..')
@@ -10,4 +10,7 @@ function prove (assert) {
     assert(start, 12, 'start')
     jacket.parse(packet, start, packet.length)
     assert(jacket.object, json, 'parsed')
+    var jacket = new Jacket()
+    jacket.parse(new Buffer('{\n'))
+    assert(!jacket.valid, 'invalid json')
 }
