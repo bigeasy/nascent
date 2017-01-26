@@ -20,7 +20,7 @@ function prove (async, assert) {
         async(function () {
             generator.send(1, async())
         }, function () {
-            assert(requests.shift(), { from: null, body: 1 }, 'sent')
+            assert(requests.shift(), { type: 'conduit', from: null, body: 1 }, 'sent')
         })
     })
 }

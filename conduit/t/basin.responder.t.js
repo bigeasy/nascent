@@ -11,7 +11,7 @@ function prove (async, assert) {
     async(function () {
         responder.enqueue({ from: 'x', body: 1 }, async())
     }, function () {
-        assert(responses.shift(), { cookie: null, to: 'x', body: 2 }, 'responder responded')
+        assert(responses.shift(), { type: 'conduit', cookie: null, to: 'x', body: 2 }, 'responder responded')
     }, function () {
         responder.enqueue({ body: 1 }, async())
     }, function () {

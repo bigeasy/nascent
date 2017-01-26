@@ -43,7 +43,9 @@ Multiplexer.prototype.destroy = function () {
 
 Multiplexer.prototype.connect = cadence(function (async) {
     var id = this._identifier = Monotonic.increment(this._identifier, 0)
-    var socket = new Socket(this, id)
+    // TODO id is going to collide, value on each side, mark with creator?
+    var socket = new Socket(this, id, false)
+    this._sockets[socket._clientKey] = socket
     async(function () {
         this._output.write(JSON.stringify({ cookie: 'header', to: id, body: null }) + '\n', async())
     }, function () {
@@ -58,7 +60,7 @@ Multiplexer.prototype._buffer = cadence(function (async, buffer, start, end) {
         var spigot = cartridge.value.spigot
         start += length
         this._record.object.length -= length
-        this._sockets[this._chunk.to].basin.enqueue({
+        this._sockets[this._chunk.to].basin.responses.enqueue({
             cookie: coalesce(this._chunk.body.cookie),
             to: coalesce(this._chunk.body.to),
             from: coalesce(this._chunk.body.from),
@@ -66,7 +68,7 @@ Multiplexer.prototype._buffer = cadence(function (async, buffer, start, end) {
         }, async())
     }, function () {
         if (this._record.object.length == 0) {
-            this._record = new Record
+            this._record = new Jacket
             cartridge.remove()
             return [ start ]
         } else {
@@ -83,15 +85,20 @@ Multiplexer.prototype._json = cadence(function (async, buffer, start, end) {
             var envelope = this._record.object
             switch (envelope.cookie) {
             case 'header':
-                this._reactor.connect(this._sockets[envelope.to] = new Socket(this), async())
+                var socket = new Socket(this, envelope.to, true)
+                this._sockets[socket._serverKey] = socket
+                this._reactor.connect(socket, async())
                 break
             case 'envelope':
-                this._sockets[envelope.to].basin.enqueue(envelope.body)
+                var socket = this._sockets[envelope.to]
+                var queue = socket._serverSide ? socket.spigot.requests : socket.basin.responses
+                queue.enqueue(envelope.body, async())
                 break
             case 'chunk':
                 this._chunk = this._record.object
                 break
             }
+            this._record = new Jacket
         }
     }, function () {
         return start

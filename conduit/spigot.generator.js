@@ -11,11 +11,19 @@ function Generator () {
 util.inherits(Generator, Spigot.Base)
 
 Generator.prototype.request = cadence(function (async, body) {
-    this.requests.push({ from: this._cliffhanger.invoke(async()), body: body })
+    this.requests.enqueue({
+        type: 'conduit',
+        from: this._cliffhanger.invoke(async()),
+        body: body
+    }, async())
 })
 
 Generator.prototype.send = cadence(function (async, body) {
-    this.requests.enqueue({ from: null, body: body }, async())
+    this.requests.enqueue({
+        type: 'conduit',
+        from: null,
+        body: body
+    }, async())
 })
 
 Generator.prototype.enqueue = cadence(function (async, envelope) {
