@@ -19,9 +19,10 @@ function prove (async, assert) {
         multiplexers[1].connect(async())
     }, function () {
         var buffer = input.read()
-        multiplexers[0].listen(buffer, async())
         async(function () {
+            multiplexers[0].listen(buffer, async())
         }, function () {
+            multiplexers[0].destroy()
         })
     })
 }

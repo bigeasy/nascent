@@ -24,7 +24,7 @@
                             "cliffhanger": "1.2.x",
                             "procession": "0.0.13",
                             "monotonic": "2.0.x",
-                            "staccato": "1.1.x"
+                            "staccato": "2.0.x"
     },
     "devDependencies":
     {
