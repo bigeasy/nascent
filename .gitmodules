@@ -4,3 +4,6 @@
 [submodule "coalesce/docs"]
 	path = coalesce/docs
 	url = https://github.com/bigeasy/nascent.git
+[submodule "conduit/docs"]
+	path = conduit/docs
+	url = https://github.com/bigeasy/nascent.git
