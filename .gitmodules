@@ -7,3 +7,6 @@
 [submodule "conduit/docs"]
 	path = conduit/docs
 	url = https://github.com/bigeasy/nascent.git
+[submodule "jacket/docs"]
+	path = jacket/docs
+	url = https://github.com/bigeasy/nascent.git
