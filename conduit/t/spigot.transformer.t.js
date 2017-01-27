@@ -7,7 +7,7 @@ function prove (async, assert) {
         response: function (value, callback) { callback(null, value + 1) },
         basin: basin = { responses: new Procession }
     })
-    var responses = basin.responses.consumer()
+    var responses = basin.responses.shifter()
     async(function () {
         transformer.enqueue(1, async())
     }, function () {

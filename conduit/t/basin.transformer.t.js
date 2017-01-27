@@ -7,7 +7,7 @@ function prove (async, assert) {
         request: function (value, callback) { callback(null, value + 1) },
         spigot: spigot = { requests: new Procession }
     })
-    var requests = spigot.requests.consumer()
+    var requests = spigot.requests.shifter()
     async(function () {
         transformer.enqueue(1, async())
     }, function () {

@@ -7,7 +7,7 @@ function prove (async, assert) {
             callback(null, envelope.body + 1)
         }
     })
-    var responses = responder.responses.consumer()
+    var responses = responder.responses.shifter()
     async(function () {
         responder.enqueue({ from: 'x', body: 1 }, async())
     }, function () {

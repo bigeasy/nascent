@@ -4,7 +4,7 @@ function prove (async, assert) {
     var Spigot = { Generator: require('../spigot.generator') }
     var Procession = require('procession')
     var basin, generator = new Spigot.Generator
-    var requests = generator.requests.consumer()
+    var requests = generator.requests.shifter()
     async(function () {
         async(function () {
             requests.dequeue(async())
