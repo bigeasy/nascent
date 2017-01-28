@@ -1,5 +1,5 @@
 {
-    "name":                 "nascent.messenger",
+    "name":                 "nascent.conduit",
     "version":              "9.9.9",
     "description":
 
@@ -33,7 +33,7 @@
                             "delta":                        "1.2.0-beta.0",
                             "proof":                        "1.2.x"
     },
-    "main":                 "messenger",
+    "main":                 "conduit",
     "scripts":
     {
                             "test": "proof test */*.t.js"
