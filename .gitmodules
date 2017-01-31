@@ -10,3 +10,9 @@
 [submodule "jacket"]
 	path = jacket
 	url = https://github.com/bigeasy/nascent.git
+[submodule "upgrader"]
+	path = upgrader
+	url = https://github.com/bigeasy/nascent.git
+[submodule "rendezvous"]
+	path = rendezvous
+	url = https://github.com/bigeasy/nascent.git
