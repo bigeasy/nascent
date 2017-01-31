@@ -6,7 +6,7 @@ var Header = require('nascent.jacket')
 var url = require('url')
 var Cache = require('magazine')
 
-function Client (middleware, request, socket, head) {
+function Envoy (middleware, request, socket, head) {
     this._interlocutor = new Interlocutor(middleware)
     this._socket = socket
     this._magazine = new Cache().createMagazine()
@@ -15,7 +15,7 @@ function Client (middleware, request, socket, head) {
     this._socket.on('data', this._data.bind(this))
 }
 
-Client.prototype._data = function (buffer) {
+Envoy.prototype._data = function (buffer) {
     var count = 0
     for (var start = 0;  start != buffer.length;) {
         if (++count == 5) throw new Error
@@ -23,7 +23,7 @@ Client.prototype._data = function (buffer) {
     }
 }
 
-Client.prototype._consume = function (buffer, start, end) {
+Envoy.prototype._consume = function (buffer, start, end) {
     if (this._header.object != null) {
         var length = Math.min(buffer.length, this._header.object.length)
         var cartridge = this._magazine.hold(cookie, null)
@@ -84,7 +84,7 @@ Client.prototype._consume = function (buffer, start, end) {
     return start
 }
 
-Client.prototype.close = cadence(function (async) {
+Envoy.prototype.close = cadence(function (async) {
     this._socket.end(async())
     this._socket.destroy()
 })
@@ -102,6 +102,6 @@ exports.connect = cadence(function (async, location, middleware) {
             }
         }, async())
     }, function (request, socket, head) {
-        return new Client(middleware, request, socket, head)
+        return new Envoy(middleware, request, socket, head)
     })
 })
