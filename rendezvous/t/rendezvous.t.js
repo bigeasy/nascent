@@ -1,6 +1,7 @@
 require('proof/redux')(1, require('cadence')(prove))
 
 function prove (async, assert) {
+    var destroyer = require('server-destroy')
     var abend = require('abend')
     var http = require('http')
     var Rendezvous = require('../rendezvous')
@@ -18,6 +19,7 @@ function prove (async, assert) {
     server.on('upgrade', function (request, socket, head) {
         upgrader.upgrade(request, socket, head)
     })
+    destroyer(server)
     async(function () {
         server.listen(8088, '127.0.0.1', async())
     }, function () {
@@ -28,22 +30,15 @@ function prove (async, assert) {
         })
         envoy.connect('http://127.0.0.1:8088/identifier', abend)
         async(function () {
+            ua.fetch({
+                url: 'http://127.0.0.1:8088/identifier/hello'
+            }, async())
+        }, function (message) {
+            assert(message, 'Hello, World!', 'body')
+            envoy.close(async())
+            rendezvous.close(async())
         }, function () {
-            console.log('---')
-            async(function () {
-                ua.fetch({
-                    url: 'http://127.0.0.1:8088/identifier/hello'
-                }, async())
-            }, function (message) {
-                assert(message, 'Hello, World!', 'body')
-                setTimeout(async(), 1000)
-            }, function () {
-                envoy.close(async())
-                rendezvous.close(async())
-                server.close(async())
-            })
-        }, function () {
-            console.log('done')
+            server.close(async())
         })
     })
 }

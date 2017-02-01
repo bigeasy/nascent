@@ -29,8 +29,7 @@
                             "vizsla":                       "2.0.x",
                             "wildmap":                      "1.0.x",
                             "interlocutor":                 "0.0.2",
-                            "staccato":                     "2.0.x",
-                            "server-destroy":               "1.0.x"
+                            "staccato":                     "2.0.x"
     },
     "devDependencies":
     {
