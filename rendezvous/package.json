@@ -20,10 +20,17 @@
     },
     "dependencies":
     {
+                            "conduit":                      "0.0.13",
                             "nascent.coalesce":             "0.0.x",
                             "nascent.jacket":               "0.0.x",
                             "nascent.upgrader":             "0.0.x",
-                            "vizsla":                       "2.0.x"
+                            "reactor":                      "2.4.x",
+                            "staccato":                     "1.1.x",
+                            "vizsla":                       "2.0.x",
+                            "wildmap":                      "1.0.x",
+                            "interlocutor":                 "0.0.2",
+                            "staccato":                     "2.0.x",
+                            "server-destroy":               "1.0.x"
     },
     "devDependencies":
     {

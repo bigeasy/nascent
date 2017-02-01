@@ -1,98 +1,122 @@
 var cadence = require('cadence')
+
+var abend = require('abend')
+var coalesce = require('nascent.coalesce')
+
+var Staccato = require('staccato')
 var Interlocutor = require('interlocutor')
 var protocols = { http: require('http'), https: require('https') }
-var Conduit = require('nascent.upgrader/socket')
+var Upgrader = { Socket: require('nascent.upgrader/socket') }
+var Reactor = require('reactor')
+
 var Header = require('nascent.jacket')
 var url = require('url')
-var Cache = require('magazine')
 
-function Envoy (middleware, request, socket, head) {
+var Cache = require('magazine')
+var Multiplexer = require('conduit/multiplexer')
+var Basin = require('conduit/basin')
+
+var Procession = require('procession')
+
+var delta = require('delta')
+
+function Envoy (middleware) {
     this._interlocutor = new Interlocutor(middleware)
-    this._socket = socket
     this._magazine = new Cache().createMagazine()
     this._header = new Header
-    this._consume(head, 0, head.length)
-    this._socket.on('data', this._data.bind(this))
+    this._reactor = new Reactor({ object: this, method: '_respond' })
 }
 
-Envoy.prototype._data = function (buffer) {
-    var count = 0
-    for (var start = 0;  start != buffer.length;) {
-        if (++count == 5) throw new Error
-        start = this._consume(buffer, start, buffer.length)
-    }
+Envoy.prototype._connect = cadence(function (async, socket) {
+    socket.spigot.emptyInto(new Response(this).basin)
+    return []
+})
+
+function Response (envoy) {
+    this._envoy = envoy
+    this.basin = new Basin.Queue(this)
 }
 
-Envoy.prototype._consume = function (buffer, start, end) {
-    if (this._header.object != null) {
-        var length = Math.min(buffer.length, this._header.object.length)
-        var cartridge = this._magazine.hold(cookie, null)
-        cartridge.value.response.write(buffer.slice(start, start + length))
-        start += length
-        cartridge.release()
-        this._header = new Header
-    }
-    start = this._header.parse(buffer, start, end)
-    if (this._header.object != null) {
-        switch (this._header.object.type) {
-        case 'header':
-            var headers = this._header.object.headers
-            headers['sec-conduit-rendezvous-actual-path'] = this._header.object.actualPath
-            this._header.object.rawHeaders.push('sec-conduit-rendezvous-actual-path', this._header.object.actualPath)
-            var request = this._interlocutor.request({
-                httpVersion: this._header.object.httpVersion,
-                method: this._header.object.method,
-                url: this._header.object.url,
-                headers: headers,
-                rawHeaders: this._header.object.rawHeaders
-            })
-            var socket = this._socket, cookie = this._header.object.cookie
-            request.on('response', function (response) {
-                socket.write(new Buffer(JSON.stringify({
-                    type: 'header',
+Response.prototype._respond = cadence(function (async, cookie) {
+    async(function () {
+        delta(async()).ee(this._request).on('response')
+    }, function (response) {
+        async(function () {
+            this.basin.responses.enqueue({
+                module: 'rendezvous',
+                method: 'header',
+                body: {
                     cookie: cookie,
                     statusCode: response.statusCode,
                     statusMessage: response.statusMessage,
                     headers: response.headers
-                }) + '\n'))
-                response.on('data', function (buffer) {
-                    socket.write(new Buffer(JSON.stringify({
-                        type: 'chunk',
+                }
+            }, async())
+        }, function () {
+            var reader = new Staccato.Readable(response)
+            var loop = async(function () {
+                async(function () {
+                    reader.read(async())
+                }, function (buffer) {
+                    if (buffer == null) {
+                        return [ loop.break ]
+                    }
+                    this.basin.responses.enqueue({
+                        module: 'rendezvous',
+                        method: 'chunk',
                         cookie: cookie,
-                        length: buffer.length
-                    }) + '\n'))
-                    socket.write(buffer)
+                        body: buffer
+                    }, async())
                 })
-                response.on('end', function () {
-                    socket.write(new Buffer(JSON.stringify({ type: 'trailer', cookie: cookie }) + '\n'))
-                })
-                // response.on('error', function (error) {})
-            })
-            this._magazine.hold(this._header.object.cookie, request).release()
-            this._header = new Header
-            break
-        case 'chunk':
-            break
-        case 'trailer':
-            var cartridge = this._magazine.hold(this._header.object.cookie, null)
-            cartridge.value.end()
-            cartridge.remove()
-            this._header = new Header
-            break
-        }
-    }
-    return start
-}
-
-Envoy.prototype.close = cadence(function (async) {
-    this._socket.end(async())
-    this._socket.destroy()
+            })()
+        }, function () {
+            this.basin.responses.enqueue({
+                module: 'rendezvous',
+                method: 'trailer',
+                cookie: cookie,
+                body: null
+            }, async())
+        }, function () {
+            this.basin.responses.enqueue(null, async())
+        })
+    })
 })
 
-exports.connect = cadence(function (async, location, middleware) {
+Response.prototype.enqueue = cadence(function (async, envelope) {
+    Procession.raiseError(envelope)
+    switch (Procession.switchable(envelope, 'method', 'end')) {
+    case 'header':
+        var headers = envelope.body.headers
+        headers['sec-conduit-rendezvous-actual-path'] = envelope.body.actualPath
+        envelope.body.rawHeaders.push('sec-conduit-rendezvous-actual-path', envelope.body.actualPath)
+        this._request = this._envoy._interlocutor.request({
+            httpVersion: envelope.body.httpVersion,
+            method: envelope.body.method,
+            url: envelope.body.url,
+            headers: headers,
+            rawHeaders: envelope.body.rawHeaders
+        })
+        this._respond(envelope.body.cookie, abend)
+        break
+    case 'chunk':
+        this._request.write(envelope.body, async())
+        break
+    case 'trailer':
+        this._request.end()
+        break
+    case 'end':
+        break
+    }
+})
+
+Envoy.prototype.close = cadence(function (async) {
+    this._multiplexer.destroy()
+})
+
+Envoy.prototype.connect = cadence(function (async, location) {
     var parsed = url.parse(location)
     async(function () {
-        Conduit.connect({
+        Upgrader.Socket.connect({
             secure: parsed.protocol == 'https:',
             host: parsed.hostname,
             port: parsed.port,
@@ -102,6 +126,11 @@ exports.connect = cadence(function (async, location, middleware) {
             }
         }, async())
     }, function (request, socket, head) {
-        return new Envoy(middleware, request, socket, head)
+        this._multiplexer = new Multiplexer(socket, socket, {
+            object: this, method: '_connect'
+        })
+        this._multiplexer.listen(head, async())
     })
 })
+
+module.exports = Envoy

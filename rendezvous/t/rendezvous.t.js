@@ -1,6 +1,7 @@
 require('proof/redux')(1, require('cadence')(prove))
 
 function prove (async, assert) {
+    var abend = require('abend')
     var http = require('http')
     var Rendezvous = require('../rendezvous')
     var Envoy = require('../envoy')
@@ -20,23 +21,29 @@ function prove (async, assert) {
     async(function () {
         server.listen(8088, '127.0.0.1', async())
     }, function () {
-        Envoy.connect('http://127.0.0.1:8088/identifier', function (request, response) {
+        var envoy = new Envoy(function (request, response) {
             response.writeHead(200, 'OK', { 'content-type': 'text/plain' })
             response.write('Hello, World!')
             response.end()
-        }, async())
-    }, function (envoy) {
-        async(function () {
-            ua.fetch({
-                url: 'http://127.0.0.1:8088/identifier/hello'
-            }, async())
-        }, function (message) {
-            assert(message.toString(), 'Hello, World!', 'body')
-            envoy.close(async())
-            rendezvous.close(async())
-            server.close(async())
         })
-    }, function () {
-        console.log('done')
+        envoy.connect('http://127.0.0.1:8088/identifier', abend)
+        async(function () {
+        }, function () {
+            console.log('---')
+            async(function () {
+                ua.fetch({
+                    url: 'http://127.0.0.1:8088/identifier/hello'
+                }, async())
+            }, function (message) {
+                assert(message, 'Hello, World!', 'body')
+                setTimeout(async(), 1000)
+            }, function () {
+                envoy.close(async())
+                rendezvous.close(async())
+                server.close(async())
+            })
+        }, function () {
+            console.log('done')
+        })
     })
 }
