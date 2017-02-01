@@ -37,10 +37,7 @@ Rendezvous.prototype.middleware = function (request, response, next) {
         // Note somewhere that this doesn't race because we only have one thread, we
         // don't have to let go at the end of the function or anything.
         this._magazine.put(cookie, response)
-        request.consume(function (error) {
-            if (error) console.log('ERROR!!!!', error.stack)
-            if (error) next(error)
-        })
+        request.consume(function (error) { if (error) next(error) })
     } else {
         next()
     }
@@ -108,7 +105,6 @@ Request.prototype.enqueue = cadence(function (async, envelope) {
             envelope.body.statusMessage, envelope.body.headers)
         break
     case 'chunk':
-        console.log('!!!', envelope)
         this._response.write(envelope.body, async())
         break
     case 'trailer':
