@@ -82,12 +82,6 @@ Rendezvous.prototype._nextCookie = function () {
     return this._cookie = Monotonic.increment(this._cookie, 0)
 }
 
-Rendezvous.prototype._data = function (buffer) {
-    for (var start = 0;  start != buffer.length;) {
-        start = this._consume(buffer, start, buffer.length)
-    }
-}
-
 function Request (rendezvous, connection, request, response, cookie) {
     this._rendezvous = rendezvous
     this._connection = connection
@@ -164,61 +158,10 @@ Request.prototype.consume = cadence(function (async) {
     })
 })
 
-Request.prototype._consume = function (buffer) {
-    this._socket.write(new Buffer(JSON.stringify({
-        type: 'chunk',
-        cookie: this._cookie,
-        length: buffer.length
-    }) + '\n'))
-    this._socket.write(buffer)
-}
-
-Rendezvous.prototype._consume = function (buffer, start, end) {
-    if (this._header.object != null) {
-        var length = Math.min(buffer.length, this._header.object.length)
-        var cartridge = this._magazine.hold(this._header.object.cookie, null)
-        cartridge.value.response.write(buffer.slice(start, start + length))
-        start += length
-        cartridge.release()
-        this._header = new Header
-    }
-    start = this._header.parse(buffer, start, end)
-    if (this._header.object != null) {
-        switch (this._header.object.type) {
-        case 'header':
-            var cartridge = this._magazine.hold(this._header.object.cookie, null)
-            cartridge.value.response.writeHead(
-                this._header.object.statusCode, this._header.object.statusMessage, this._header.object.headers)
-            cartridge.release()
-            this._header = new Header
-            break
-        case 'chunk':
-            break
-        case 'trailer':
-            var cartridge = this._magazine.hold(this._header.object.cookie, null)
-            cartridge.value.response.end()
-            cartridge.remove()
-            this._header = new Header
-            break
-        }
-    }
-    return start
-}
-
-Request.prototype._respond = function (buffer) {
-    var start = 0
-    while (start < buffer.length) {
-        start = this._consume(buffer, start, buffer.length)
-    }
-}
-
-Request.prototype.request = function (request, response) {
-}
-
 Rendezvous.prototype.close = cadence(function (async) {
-        async.forEach(function (path) {
-            this._connections.get(path.split('/'))[0].socket.end(async())
-        })(this._paths)
+    async.forEach(function (path) {
+        this._connections.get(path.split('/'))[0].socket.end(async())
+    })(this._paths)
 })
 
 module.exports = Rendezvous
