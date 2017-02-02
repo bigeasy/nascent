@@ -1,6 +1,6 @@
 {
     "name":                 "nascent.rendezvous",
-    "version":              "0.0.3",
+    "version":              "0.0.4",
     "description":
 
       "Allow two or more collaborating services to find each other through an HTTP proxy.",
