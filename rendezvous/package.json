@@ -20,7 +20,7 @@
     },
     "dependencies":
     {
-                            "conduit":                      "0.0.13",
+                            "conduit":                      "0.0.15",
                             "nascent.coalesce":             "0.0.x",
                             "nascent.jacket":               "0.0.x",
                             "nascent.upgrader":             "0.0.x",

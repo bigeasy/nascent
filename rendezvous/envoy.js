@@ -84,27 +84,31 @@ Response.prototype._respond = cadence(function (async, cookie) {
 
 Response.prototype.enqueue = cadence(function (async, envelope) {
     Procession.raiseError(envelope)
-    switch (Procession.switchable(envelope, 'method', 'end')) {
-    case 'header':
-        var headers = envelope.body.headers
-        headers['sec-conduit-rendezvous-actual-path'] = envelope.body.actualPath
-        envelope.body.rawHeaders.push('sec-conduit-rendezvous-actual-path', envelope.body.actualPath)
-        this._request = this._envoy._interlocutor.request({
-            httpVersion: envelope.body.httpVersion,
-            method: envelope.body.method,
-            url: envelope.body.url,
-            headers: headers,
-            rawHeaders: envelope.body.rawHeaders
-        })
-        this._respond(envelope.body.cookie, abend)
-        break
-    case 'chunk':
-        this._request.write(envelope.body, async())
-        break
-    case 'trailer':
-        this._request.end()
-        break
-    case 'end':
+    switch (envelope.method) {
+    case 'entry':
+        envelope = envelope.body
+        switch (envelope.method) {
+        case 'header':
+            var headers = envelope.body.headers
+            headers['sec-conduit-rendezvous-actual-path'] = envelope.body.actualPath
+            envelope.body.rawHeaders.push('sec-conduit-rendezvous-actual-path', envelope.body.actualPath)
+            this._request = this._envoy._interlocutor.request({
+                httpVersion: envelope.body.httpVersion,
+                method: envelope.body.method,
+                url: envelope.body.url,
+                headers: headers,
+                rawHeaders: envelope.body.rawHeaders
+            })
+            this._respond(envelope.body.cookie, abend)
+            break
+        case 'chunk':
+            this._request.write(envelope.body, async())
+            break
+        case 'trailer':
+            this._request.end()
+            break
+        }
+    case 'endOfStream':
         break
     }
 })

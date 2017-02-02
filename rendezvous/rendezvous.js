@@ -17,6 +17,7 @@ var Multiplexer = require('conduit/multiplexer')
 
 function Rendezvous () {
     this._magazine = new Cache().createMagazine()
+    // TODO Outgoing.
     this._cookie = '0'
     this._requestNumber = 0xffffffff
     this._connections = new WildMap
@@ -93,17 +94,23 @@ function Request (rendezvous, connection, request, response, cookie) {
 
 Request.prototype.enqueue = cadence(function (async, envelope) {
     Procession.raiseError(envelope)
-    switch (Procession.switchable(envelope, 'method', 'end')) {
-    case 'header':
-        this._response.writeHead(envelope.body.statusCode,
-            envelope.body.statusMessage, envelope.body.headers)
+    switch (envelope.method) {
+    case 'entry':
+        envelope = envelope.body
+        switch (envelope.method) {
+        case 'header':
+            this._response.writeHead(envelope.body.statusCode,
+                envelope.body.statusMessage, envelope.body.headers)
+            break
+        case 'chunk':
+            this._response.write(envelope.body, async())
+            break
+        case 'trailer':
+            this._response.end()
+            break
+        }
         break
-    case 'chunk':
-        this._response.write(envelope.body, async())
-        break
-    case 'trailer':
-        this._response.end()
-    case 'end':
+    case 'endOfStream':
         break
     }
 })

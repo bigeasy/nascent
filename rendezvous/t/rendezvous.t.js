@@ -1,7 +1,6 @@
 require('proof/redux')(1, require('cadence')(prove))
 
 function prove (async, assert) {
-    var destroyer = require('server-destroy')
     var abend = require('abend')
     var http = require('http')
     var Rendezvous = require('../rendezvous')
@@ -19,7 +18,6 @@ function prove (async, assert) {
     server.on('upgrade', function (request, socket, head) {
         upgrader.upgrade(request, socket, head)
     })
-    destroyer(server)
     async(function () {
         server.listen(8088, '127.0.0.1', async())
     }, function () {
