@@ -1,8 +1,6 @@
 var assert = require('assert')
 var abend = require('abend')
 var cadence = require('cadence')
-var Cache = require('magazine')
-var Monotonic = require('monotonic').asString
 var coalesce = require('nascent.coalesce')
 var WildMap = require('wildmap')
 var url = require('url')
@@ -16,10 +14,6 @@ var Procession = require('procession')
 var Multiplexer = require('conduit/multiplexer')
 
 function Rendezvous () {
-    this._magazine = new Cache().createMagazine()
-    // TODO Outgoing.
-    this._cookie = '0'
-    this._requestNumber = 0xffffffff
     this._connections = new WildMap
     this._paths = []
 }
@@ -33,11 +27,7 @@ Rendezvous.prototype.middleware = function (request, response, next) {
     var path = parsed.path.split('/')
     var connection = this._connections.match(path).pop()
     if (connection) {
-        var cookie = this._nextCookie()
-        var request = new Request(this, connection, request, response, cookie)
-        // Note somewhere that this doesn't race because we only have one thread, we
-        // don't have to let go at the end of the function or anything.
-        this._magazine.put(cookie, response)
+        var request = new Request(this, connection, request, response)
         request.consume(function (error) { if (error) next(error) })
     } else {
         next()
@@ -79,16 +69,11 @@ Rendezvous.prototype.upgrade = function (request, socket) {
     return true
 }
 
-Rendezvous.prototype._nextCookie = function () {
-    return this._cookie = Monotonic.increment(this._cookie, 0)
-}
-
-function Request (rendezvous, connection, request, response, cookie) {
+function Request (rendezvous, connection, request, response) {
     this._rendezvous = rendezvous
     this._connection = connection
     this._request = request
     this._response = response
-    this._cookie = cookie
     this._spigot = new Spigot.Queue(this)
 }
 
@@ -129,7 +114,6 @@ Request.prototype.consume = cadence(function (async) {
             module: 'rendezvous',
             method: 'header',
             body: {
-                cookie: this._cookie,
                 httpVersion: this._request.httpVersion,
                 method: this._request.method,
                 url: location,
