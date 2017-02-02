@@ -75,10 +75,10 @@ function Request (rendezvous, connection, request, response) {
     this._connection = connection
     this._request = request
     this._response = response
-    this._spigot = new Spigot.Queue(this)
+    this._spigot = new Spigot(this)
 }
 
-Request.prototype.enqueue = cadence(function (async, envelope) {
+Request.prototype.fromSpigot = cadence(function (async, envelope) {
     Procession.raiseError(envelope)
     switch (envelope.method) {
     case 'entry':

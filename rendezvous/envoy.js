@@ -32,7 +32,7 @@ Envoy.prototype._connect = cadence(function (async, socket) {
 
 function Response (envoy) {
     this._envoy = envoy
-    this.basin = new Basin.Queue(this)
+    this.basin = new Basin(this)
 }
 
 Response.prototype._respond = cadence(function (async, cookie) {
@@ -81,7 +81,7 @@ Response.prototype._respond = cadence(function (async, cookie) {
     })
 })
 
-Response.prototype.enqueue = cadence(function (async, envelope) {
+Response.prototype.fromBasin = cadence(function (async, envelope) {
     Procession.raiseError(envelope)
     switch (envelope.method) {
     case 'entry':
