@@ -134,10 +134,16 @@ Envoy.prototype.connect = cadence(function (async, location) {
             }
         }, async())
     }, function (request, socket, head) {
-        this._multiplexer = new Multiplexer(socket, socket, {
-            object: this, method: '_connect'
+        async([function () {
+            // Seems harsh, but once the multiplexer has been destroyed nothing
+            // is going to be listening for any final messages.
+            socket.destroy()
+        }], function () {
+            this._multiplexer = new Multiplexer(socket, socket, {
+                object: this, method: '_connect'
+            })
+            this._multiplexer.listen(head, async())
         })
-        this._multiplexer.listen(head, async())
     })
 })
 
