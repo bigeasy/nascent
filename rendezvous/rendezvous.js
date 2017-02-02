@@ -53,6 +53,7 @@ Rendezvous.prototype.upgrade = function (request, socket) {
         socket: socket,
         multiplexer: new Multiplexer(socket, socket)
     }
+    // TODO Instead of `abend`, some sort of cleanup and recovery.
     connection.multiplexer.listen(abend)
     connections.add(path, connection)
     this._paths.push(path.join('/'))

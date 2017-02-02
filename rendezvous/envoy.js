@@ -70,6 +70,7 @@ Response.prototype._respond = cadence(function (async, cookie) {
                 })
             })()
         }, function () {
+            // TODO Use Conduit framing, use this only for actual trailers.
             this.basin.responses.enqueue({
                 module: 'rendezvous',
                 method: 'trailer',
@@ -99,6 +100,7 @@ Response.prototype.enqueue = cadence(function (async, envelope) {
                 headers: headers,
                 rawHeaders: envelope.body.rawHeaders
             })
+            // TODO Instead of abend, something that would stop the request.
             this._respond(envelope.body.cookie, abend)
             break
         case 'chunk':
