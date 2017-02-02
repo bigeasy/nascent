@@ -25,6 +25,7 @@
                             "nascent.coalesce":             "0.0.x",
                             "nascent.jacket":               "0.0.x",
                             "nascent.upgrader":             "0.0.x",
+                            "procession":                   "0.0.25",
                             "reactor":                      "2.4.x",
                             "staccato":                     "1.1.x",
                             "vizsla":                       "2.0.x",
