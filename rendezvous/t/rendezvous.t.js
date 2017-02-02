@@ -33,7 +33,7 @@ function prove (async, assert) {
             }, async())
         }, function (message) {
             assert(message, 'Hello, World!', 'body')
-            envoy.close(async())
+            envoy.close()
             rendezvous.close(async())
         }, function () {
             server.close(async())

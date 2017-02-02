@@ -113,9 +113,13 @@ Response.prototype.fromBasin = cadence(function (async, envelope) {
     }
 })
 
-Envoy.prototype.close = cadence(function (async) {
+Envoy.prototype._close = cadence(function (async) {
     this._multiplexer.destroy()
 })
+
+Envoy.prototype.close = function (callback) {
+    this._close(callback || abend)
+}
 
 Envoy.prototype.connect = cadence(function (async, location) {
     var parsed = url.parse(location)
