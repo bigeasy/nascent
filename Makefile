@@ -43,8 +43,9 @@ export CHROME_REFRESH
 PATH  := "$(PATH):$(PWD)/node_modules/.bin"
 SHELL := env PATH=$(PATH) /bin/sh
 
-javascript := $(wildcard ../*.js)
-docco := $(patsubst ../%.js,docco/%.html,$(javascript))
+javascript := $(filter-out ../_%, $(wildcard ../*.js))
+sources := $(patsubst ../%.js,source/%.js.js,$(javascript))
+docco := $(patsubst source/%.js.js,docco/%.js.html,$(sources))
 outputs := $(docco) css/style.css index.html
 
 all: $(outputs)
@@ -76,10 +77,15 @@ watch: all
 css/%.css: css/%.less node_modules/.bin/lessc
 	node_modules/.bin/lessc $< > $@ || rm -f $@
 
-docco/%.html: ../%.js node_modules/.bin/docco
+source/%.js.js: ../%.js
+	mkdir -p source
+	cp $< $@
+
+$(docco): $(sources) node_modules/.bin/docco
 	mkdir -p docco
-	node_modules/.bin/docco -o docco -c docco.css ../*.js
-	sed -i '' -e 's/[ \t]*$$//' docco/*.html
+	node_modules/.bin/docco -o docco -c docco.css source/*.js.js
+	sed -i '' -e 's/[ \t]*$$//' docco/*.js.html
+	sed -i '' -e 's/\.js\.js/.js/' docco/*.js.html
 
 index.html: index.md
 
@@ -93,5 +99,8 @@ index.html: index.md
 clean:
 	rm -f $(outputs)
 
+# Use `--no-less` or else Serve will compile our less minified.
 serve: node_modules/.bin/serve
-	node_modules/.bin/serve -p 4000
+	node_modules/.bin/serve --no-less --port 4000
+
+.INTERMEDIATE: $(sources)
