@@ -12,7 +12,6 @@ var Reactor = require('reactor')
 var Header = require('nascent.jacket')
 var url = require('url')
 
-var Cache = require('magazine')
 var Multiplexer = require('conduit/multiplexer')
 var Basin = require('conduit/basin')
 
@@ -22,7 +21,6 @@ var delta = require('delta')
 
 function Envoy (middleware) {
     this._interlocutor = new Interlocutor(middleware)
-    this._magazine = new Cache().createMagazine()
     this._header = new Header
     this._reactor = new Reactor({ object: this, method: '_respond' })
 }
