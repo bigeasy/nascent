@@ -150,10 +150,14 @@ Request.prototype.consume = cadence(function (async) {
     })
 })
 
-Rendezvous.prototype.close = cadence(function (async) {
+Rendezvous.prototype._close = cadence(function (async) {
     async.forEach(function (path) {
         this._connections.get(path.split('/'))[0].socket.end(async())
     })(this._paths)
 })
+
+Rendezvous.prototype.close = function (callback) {
+    this._close(callback || abend)
+}
 
 module.exports = Rendezvous
