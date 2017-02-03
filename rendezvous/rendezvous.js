@@ -79,26 +79,22 @@ function Request (rendezvous, connection, request, response) {
 }
 
 Request.prototype.fromSpigot = cadence(function (async, envelope) {
-    Procession.raiseError(envelope)
+    if (envelope == null) {
+        return []
+    }
     switch (envelope.method) {
-    case 'entry':
-        envelope = envelope.body
-        switch (envelope.method) {
-        case 'header':
-            this._response.writeHead(envelope.body.statusCode,
-                envelope.body.statusMessage, envelope.body.headers)
-            break
-        case 'chunk':
-            this._response.write(envelope.body, async())
-            break
-        case 'trailer':
-            this._response.end()
-            break
-        }
+    case 'header':
+        this._response.writeHead(envelope.body.statusCode,
+            envelope.body.statusMessage, envelope.body.headers)
         break
-    case 'endOfStream':
+    case 'chunk':
+        this._response.write(envelope.body, async())
+        break
+    case 'trailer':
+        this._response.end()
         break
     }
+    return []
 })
 
 // http://stackoverflow.com/a/5426648
