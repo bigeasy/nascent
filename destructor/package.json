@@ -20,7 +20,7 @@
     },
     "dependencies":
     {
-                            "interrupt":                    "2.1.x",
+                            "interrupt":                    "5.0.x",
                             "nascent.coalesce":             "0.0.0",
                             "operation":                    "1.2.x"
     },
