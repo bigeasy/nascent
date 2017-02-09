@@ -15,7 +15,7 @@ var Multiplexer = require('conduit/multiplexer')
 
 function Rendezvous () {
     this._connections = new WildMap
-    this._paths = []
+    this.paths = []
 }
 
 Rendezvous.prototype.listener = function (callback, request, response) {
@@ -39,31 +39,32 @@ Rendezvous.prototype.upgrade = function (request, socket) {
     if (path == null) {
         return false
     }
-    var paths = this._paths, connections = this._connections, magazine = this._magazine
+    var paths = this.paths, connections = this._connections, magazine = this._magazine
 
-    path = path.split('/')
+    var parts = path.split('/')
 
-    var connection = connections.get(path)[0]
-    if (connection != null) {
-        connection.close.call(null)
-    }
-    connection = {
-        path: path.join('/'),
+    connections.get(parts).forEach(function (connection) {
+        if (connection.path == path) {
+            connection.close.call(null)
+        }
+    })
+    var connection = {
+        path: path,
         close: close,
         socket: socket,
         multiplexer: new Multiplexer(socket, socket)
     }
     // TODO Instead of `abend`, some sort of cleanup and recovery.
     connection.multiplexer.listen(abend)
-    connections.add(path, connection)
-    this._paths.push(path.join('/'))
+    connections.add(parts, connection)
+    paths.push(path)
 
     //socket.once('error', function () { })
 
     function close () {
         connection.multiplexer.destroy()
-        connections.remove(path, connections.get(path)[0])
-        paths.splice(paths.indexOf(path.join('/')), 1)
+        connections.remove(parts, connections.get(path)[0])
+        paths.splice(paths.indexOf(path), 1)
         socket.destroy()
     }
 
@@ -149,7 +150,7 @@ Request.prototype.consume = cadence(function (async) {
 Rendezvous.prototype._close = cadence(function (async) {
     async.forEach(function (path) {
         this._connections.get(path.split('/'))[0].socket.end(async())
-    })(this._paths)
+    })(this.paths)
 })
 
 Rendezvous.prototype.close = function (callback) {
