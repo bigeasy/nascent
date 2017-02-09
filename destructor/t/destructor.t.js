@@ -1,6 +1,6 @@
-require('proof/redux')(6, prove)
+require('proof/redux')(7, require('cadence')(prove))
 
-function prove (assert) {
+function prove (async, assert) {
     var Destructor = require('..')
     var destructor = new Destructor
 
@@ -19,19 +19,29 @@ function prove (assert) {
 
     destructor.check()
 
-    destructor.destroy(new Error('cause'))
-    assert(destructor.destroyed, true, 'destroyed')
+    async([function () {
+        destructor.destructable(function (callback) {
+            callback(new Error('cause'))
+        }, async())
+    }, function (error) {
+        assert(error.message, 'cause', 'error thrown')
+        assert(destructor.destroyed, true, 'destroyed')
 
-    try {
-        destructor.check()
-    } catch (error) {
-        console.log(error.stack)
-        assert(/^nascent.destructor#destroyed$/m.test(error.message), 'destroyed')
-    }
+        try {
+            destructor.check()
+        } catch (error) {
+            console.log(error.stack)
+            assert(/^nascent.destructor#destroyed$/m.test(error.message), 'destroyed')
+        }
 
-    destructor.destroy()
+        destructor.destroy()
 
-    destructor.addDestructor('destroyed', function () {
-        assert(true, 'run after destroyed')
-    })
+        destructor.addDestructor('destroyed', function () {
+            assert(true, 'run after destroyed')
+        })
+
+        destructor.destructable(function () {
+            assert(false, 'should not be called')
+        }, async())
+    }])
 }

@@ -1,3 +1,4 @@
+var cadence = require('cadence')
 var coalesce = require('nascent.coalesce')
 var DEFAULT = {
     interrupt: require('interrupt').createInterrupter('nascent.destructor')
@@ -52,5 +53,18 @@ Destructor.prototype.check = function () {
         throw this._interrupt('destroyed', {}, { cause: coalesce(this.cause) })
     }
 }
+
+Destructor.prototype.destructable = cadence(function (async, f) {
+    if (!this.destroyed) {
+        async([function () {
+            this.destroy()
+        }], [function () {
+            f(async())
+        }, function (error) {
+            this.destroy(error)
+            throw error
+        }])
+    }
+})
 
 module.exports = Destructor
