@@ -1,18 +1,3 @@
 [submodule "vendor/lesshat"]
 	path = vendor/lesshat
 	url = https://github.com/madebysource/lesshat.git
-[submodule "coalesce"]
-	path = coalesce
-	url = https://github.com/bigeasy/nascent.git
-[submodule "conduit"]
-	path = conduit
-	url = https://github.com/bigeasy/nascent.git
-[submodule "jacket"]
-	path = jacket
-	url = https://github.com/bigeasy/nascent.git
-[submodule "upgrader"]
-	path = upgrader
-	url = https://github.com/bigeasy/nascent.git
-[submodule "rendezvous"]
-	path = rendezvous
-	url = https://github.com/bigeasy/nascent.git
