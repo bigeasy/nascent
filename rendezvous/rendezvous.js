@@ -7,6 +7,7 @@ var url = require('url')
 var coalesce = require('nascent.coalesce')
 var Spigot = require('conduit/spigot')
 var Staccato = require('staccato')
+var Destructor = require('nascent.destructor')
 
 // Evented message queue.
 var Procession = require('procession')
@@ -15,6 +16,8 @@ var Multiplexer = require('conduit/multiplexer')
 
 function Rendezvous () {
     this._connections = new WildMap
+    this._destructor = new Destructor
+    this._destructor.markDestroyed(this, 'destroyed')
     this.paths = []
 }
 
@@ -35,6 +38,10 @@ Rendezvous.prototype.middleware = function (request, response, next) {
 }
 
 Rendezvous.prototype.upgrade = function (request, socket) {
+    if (this.destroyed) {
+        socket.destroy()
+        return
+    }
     var path = request.headers['sec-conduit-rendezvous-path']
     if (path == null) {
         return false
@@ -147,14 +154,18 @@ Request.prototype.consume = cadence(function (async) {
     })
 })
 
+// TODO Maybe close is different from destroy?
 Rendezvous.prototype._close = cadence(function (async) {
     async.forEach(function (path) {
-        this._connections.get(path.split('/'))[0].socket.end(async())
-    })(this.paths)
+        this._connections.get(path.split('/')).forEach(function (connection) {
+            connection.multiplexer.destroy()
+            connection.socket.destroy()
+        })
+    })(this.paths.slice(0, this.paths.length))
 })
 
 Rendezvous.prototype.close = function (callback) {
-    this._close(callback || abend)
+    this._close(coalesce(callback, abend))
 }
 
 module.exports = Rendezvous
