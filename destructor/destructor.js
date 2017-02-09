@@ -49,7 +49,7 @@ Destructor.prototype.getDestructors = function () {
 
 Destructor.prototype.check = function () {
     if (this.destroyed) {
-        throw this._interrupt({ name: 'destroyed', cause: coalesce(this.cause) })
+        throw this._interrupt('destroyed', {}, { cause: coalesce(this.cause) })
     }
 }
 
