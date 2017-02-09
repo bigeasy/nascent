@@ -22,7 +22,7 @@
     {
                             "interrupt":                    "2.1.x",
                             "nascent.coalesce":             "0.0.0",
-                            "operation":                    "1.1.x"
+                            "operation":                    "1.2.x"
     },
     "devDependencies":
     {
