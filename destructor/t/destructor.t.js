@@ -1,9 +1,12 @@
-require('proof/redux')(7, require('cadence')(prove))
+require('proof/redux')(8, require('cadence')(prove))
 
 function prove (async, assert) {
     var Destructor = require('..')
     var destructor = new Destructor
 
+    var object = { destroyed: false }
+
+    destructor.markDestroyed(object, 'destroyed')
     destructor.addDestructor('destructor', function () {
         assert(true, 'destructor ran')
     })
@@ -26,6 +29,7 @@ function prove (async, assert) {
     }, function (error) {
         assert(error.message, 'cause', 'error thrown')
         assert(destructor.destroyed, true, 'destroyed')
+        assert(object.destroyed, true, 'marked destroyed')
 
         try {
             destructor.check()

@@ -10,6 +10,7 @@ function Destructor (interrupt) {
     this.destroyed = false
     this.cause = null
     this._destructors = {}
+    this._markers = []
     this.asListener = this.asCallback = this.destroy.bind(this)
 }
 
@@ -24,7 +25,13 @@ Destructor.prototype.destroy = function (error) {
             this._destructors[name].apply([])
         }
         this._destructors = null
+        this._markers.forEach(function (f) { f() })
+        this._markers = null
     }
+}
+
+Destructor.prototype.markDestroyed = function (object, property) {
+    this._markers.push(function () { object[property] = true })
 }
 
 Destructor.prototype.addDestructor = function (name, operation) {
