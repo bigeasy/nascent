@@ -7,7 +7,8 @@ var Operation = require('operation')
 function Destructor (interrupt) {
     this._interrupt = coalesce(interrupt, DEFAULT.interrupt)
     this.destroyed = false
-    this._janitors = {}
+    this.cause = null
+    this._destructors = {}
     this.asListener = this.asCallback = this.destroy.bind(this)
 }
 
@@ -18,40 +19,37 @@ Destructor.prototype.destroy = function (error) {
     }
     if (!this.destroyed) {
         this.destroyed = true
-        for (var name in this._janitors) {
-            this._janitors[name].apply([])
+        for (var name in this._destructors) {
+            this._destructors[name].apply([])
         }
-        this._janitors = null
+        this._destructors = null
     }
 }
 
-Destructor.prototype.addJanitor = function (name, operation) {
+Destructor.prototype.addDestructor = function (name, operation) {
     if (this.destroyed) {
         operation.apply([])
     } else {
-        this._janitors[name] = new Operation(operation)
+        this._destructors[name] = new Operation(operation)
     }
 }
 
-Destructor.prototype.invokeJanitor = function (name) {
-    this._janitors[name].apply([])
-    delete this._janitors[name]
+Destructor.prototype.invokeDestructor = function (name) {
+    this._destructors[name].apply([])
+    delete this._destructors[name]
 }
 
-Destructor.prototype.removeJanitor = function (name) {
-    delete this._janitors[name]
+Destructor.prototype.removeDestructor = function (name) {
+    delete this._destructors[name]
 }
 
-Destructor.prototype.getJanitors = function () {
-    return Object.keys(this._janitors)
+Destructor.prototype.getDestructors = function () {
+    return Object.keys(this._destructors)
 }
 
 Destructor.prototype.check = function () {
     if (this.destroyed) {
-        throw this._interrupt({
-            name: 'destroyed',
-            cause: coalesce(this.cause)
-        })
+        throw this._interrupt({ name: 'destroyed', cause: coalesce(this.cause) })
     }
 }
 

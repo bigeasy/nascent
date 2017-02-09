@@ -4,18 +4,18 @@ function prove (assert) {
     var Destructor = require('..')
     var destructor = new Destructor
 
-    destructor.addJanitor('janitor', function () {
-        assert(true, 'janitor ran')
+    destructor.addDestructor('destructor', function () {
+        assert(true, 'destructor ran')
     })
-    destructor.addJanitor('invoked', function () {
-        assert(true, 'janitor invoked')
+    destructor.addDestructor('invoked', function () {
+        assert(true, 'destructor invoked')
     })
-    destructor.addJanitor('removed', function () {
+    destructor.addDestructor('removed', function () {
         throw new Error('should not run')
     })
-    destructor.invokeJanitor('invoked')
-    destructor.removeJanitor('removed')
-    assert(destructor.getJanitors(), [ 'janitor' ], 'removed')
+    destructor.invokeDestructor('invoked')
+    destructor.removeDestructor('removed')
+    assert(destructor.getDestructors(), [ 'destructor' ], 'removed')
 
     destructor.check()
 
@@ -31,7 +31,7 @@ function prove (assert) {
 
     destructor.destroy()
 
-    destructor.addJanitor('destroyed', function () {
+    destructor.addDestructor('destroyed', function () {
         assert(true, 'run after destroyed')
     })
 }
