@@ -17,6 +17,8 @@ var Basin = require('conduit/basin')
 
 var Procession = require('procession')
 
+var Signal = require('signal')
+
 var Destructor = require('nascent.destructor')
 
 var coalesce = require('nascent.coalesce')
@@ -24,11 +26,16 @@ var coalesce = require('nascent.coalesce')
 var delta = require('delta')
 
 function Envoy (middleware) {
+    this.connected = new Signal
     this._interlocutor = new Interlocutor(middleware)
     this._header = new Header
     this._destructor = new Destructor
     this._destructor.markDestroyed(this, 'destroyed')
     this._reactor = new Reactor({ object: this, method: '_respond' })
+    this._destructor.addDestructor('connected', function () {
+        this.connected.notify()
+        this.connected.open = []
+    }.bind(this))
 }
 
 Envoy.prototype._connect = cadence(function (async, socket) {
@@ -141,15 +148,26 @@ Envoy.prototype.connect = cadence(function (async, location) {
             }
         }, async())
     }, function (request, socket, head) {
+        this._destructor.addDestructor('called', function () { console.log('envoy destructing') })
+        this._destructor.addDestructor('socket', socket.destroy.bind(socket))
+        this.connected.notify()
+        this.connected.open = []
         // Seems harsh, but once the multiplexer has been destroyed nothing is
         // going to be listening for any final messages.
-        this._destructor.addDestructor('socket', socket.destroy.bind(socket))
         // TODO How do you feel about `bind`?
-        this._destructor.destructable(function (callback) {
-            this._multiplexer = new Multiplexer(socket, socket, { object: this, method: '_connect' })
-            this._destructor.addDestructor('multiplexer', this._multiplexer.destroy.bind(this._multiplexer))
-            this._multiplexer.listen(head, async())
-        }.bind(this), async())
+            console.log('--- xxx ---', this._destructor.destroyed)
+        this._destructor.destructable(cadence(function (async) {
+            async(function () {
+                this._multiplexer = new Multiplexer(socket, socket, { object: this, method: '_connect' })
+                this._destructor.addDestructor('multiplexer', this._multiplexer.destroy.bind(this._multiplexer))
+                this._multiplexer.listen(head, async())
+            }, function () {
+                console.log('muxer stopped')
+                this._destructor.destroy()
+            })
+        }).bind(this), async())
+    }, function () {
+        console.log('done')
     })
 })
 
