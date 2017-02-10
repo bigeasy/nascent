@@ -1,4 +1,5 @@
 {
+    "private":              true,
     "name":                 "nascent",
     "version":              "0.0.4",
     "description":
