@@ -68,7 +68,9 @@ Destructor.prototype.destructable = cadence(function (async, f) {
         }], [function () {
             f(async())
         }, function (error) {
-            this.destroy(error)
+            if (!this.destroyed) {
+                this.destroy(error)
+            }
             throw error
         }])
     }
