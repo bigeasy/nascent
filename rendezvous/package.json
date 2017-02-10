@@ -30,6 +30,7 @@
                             "procession":                   "0.0.31",
                             "reactor":                      "2.4.x",
                             "staccato":                     "2.0.x",
+                            "signal":                       "1.8.x",
                             "vizsla":                       "2.0.x",
                             "wildmap":                      "1.0.x"
     },
