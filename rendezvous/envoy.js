@@ -148,26 +148,21 @@ Envoy.prototype.connect = cadence(function (async, location) {
             }
         }, async())
     }, function (request, socket, head) {
-        this._destructor.addDestructor('called', function () { console.log('envoy destructing') })
         this._destructor.addDestructor('socket', socket.destroy.bind(socket))
         this.connected.notify()
         this.connected.open = []
         // Seems harsh, but once the multiplexer has been destroyed nothing is
         // going to be listening for any final messages.
         // TODO How do you feel about `bind`?
-            console.log('--- xxx ---', this._destructor.destroyed)
         this._destructor.destructable(cadence(function (async) {
             async(function () {
                 this._multiplexer = new Multiplexer(socket, socket, { object: this, method: '_connect' })
                 this._destructor.addDestructor('multiplexer', this._multiplexer.destroy.bind(this._multiplexer))
                 this._multiplexer.listen(head, async())
             }, function () {
-                console.log('muxer stopped')
                 this._destructor.destroy()
             })
         }).bind(this), async())
-    }, function () {
-        console.log('done')
     })
 })
 
