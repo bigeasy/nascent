@@ -21,7 +21,7 @@
     "dependencies":
     {
                             "abend":                        "1.0.x",
-                            "conduit":                      "0.0.26",
+                            "conduit":                      "0.1.x",
                             "interlocutor":                 "0.0.2",
                             "nascent.coalesce":             "0.0.x",
                             "nascent.jacket":               "0.0.x",
