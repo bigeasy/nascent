@@ -1,5 +1,6 @@
 var delta = require('delta')
 var cadence = require('cadence')
+var assert = require('assert')
 
 var PROTOCOL = {
     http: require('http'),
@@ -31,9 +32,7 @@ exports.connect = cadence(function (async, options) {
         host: options.host,
         headers: headers
     })
-    request.on('response', function () {
-        console.log('called')
-    })
+    request.on('response', assert.bind(null, false, 'should be no response'))
     async(function () {
         delta(async()).ee(request).on('upgrade')
         request.end()
