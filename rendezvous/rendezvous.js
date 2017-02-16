@@ -4,10 +4,9 @@ var cadence = require('cadence')
 var coalesce = require('nascent.coalesce')
 var WildMap = require('wildmap')
 var url = require('url')
-var coalesce = require('nascent.coalesce')
 var Spigot = require('conduit/spigot')
 var Staccato = require('staccato')
-var Destructor = require('nascent.destructor')
+var Destructor = require('destructible')
 
 // Evented message queue.
 var Procession = require('procession')

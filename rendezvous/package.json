@@ -26,7 +26,7 @@
                             "nascent.coalesce":             "0.0.x",
                             "nascent.jacket":               "0.0.x",
                             "nascent.upgrader":             "0.0.x",
-                            "nascent.destructor":           "0.0.6",
+                            "destructible":                 "0.1.x",
                             "procession":                   "0.1.x",
                             "reactor":                      "2.4.x",
                             "staccato":                     "3.0.x",

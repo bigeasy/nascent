@@ -19,7 +19,7 @@ var Procession = require('procession')
 
 var Signal = require('signal')
 
-var Destructor = require('nascent.destructor')
+var Destructor = require('destructible')
 
 var coalesce = require('nascent.coalesce')
 
@@ -154,15 +154,11 @@ Envoy.prototype.connect = cadence(function (async, location) {
         // Seems harsh, but once the multiplexer has been destroyed nothing is
         // going to be listening for any final messages.
         // TODO How do you feel about `bind`?
-        this._destructor.destructable(cadence(function (async) {
-            async(function () {
-                this._multiplexer = new Multiplexer(socket, socket, { object: this, method: '_connect' })
-                this._destructor.addDestructor('multiplexer', this._multiplexer.destroy.bind(this._multiplexer))
-                this._multiplexer.listen(head, async())
-            }, function () {
-                this._destructor.destroy()
-            })
-        }).bind(this), async())
+        this._destructor.async(async, 'connect')(function () {
+            this._multiplexer = new Multiplexer(socket, socket, { object: this, method: '_connect' })
+            this._destructor.addDestructor('multiplexer', this._multiplexer.destroy.bind(this._multiplexer))
+            this._multiplexer.listen(head, async())
+        })
     })
 })
 
