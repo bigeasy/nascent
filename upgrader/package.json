@@ -1,6 +1,6 @@
 {
     "name":                 "nascent.upgrader",
-    "version":              "0.0.0",
+    "version":              "0.1.0",
     "description":
 
       "Upgrade HTTP sockets to raw sockets and do what you want with them. Scandalous! It's true.",
