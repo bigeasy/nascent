@@ -7,6 +7,9 @@ var url = require('url')
 var Spigot = require('conduit/spigot')
 var Staccato = require('staccato')
 var Destructor = require('destructible')
+var Monotonic = require('monotonic').asString
+
+var logger = require('prolific.logger').createLogger('rendezvous')
 
 // Evented message queue.
 var Procession = require('procession')
@@ -17,6 +20,7 @@ function Rendezvous () {
     this._connections = new WildMap
     this._destructor = new Destructor
     this._destructor.markDestroyed(this, 'destroyed')
+    this._instance = '0'
     this.paths = []
 }
 
@@ -47,6 +51,8 @@ Rendezvous.prototype.upgrade = function (request, socket) {
     }
     var paths = this.paths, connections = this._connections, magazine = this._magazine
 
+    var instance = this._instance = Monotonic.increment(this._instance, 0)
+
     var parts = path.split('/')
 
     connections.get(parts).forEach(function (connection) {
@@ -58,6 +64,7 @@ Rendezvous.prototype.upgrade = function (request, socket) {
         path: path,
         close: close,
         socket: socket,
+        instance: instance,
         multiplexer: new Multiplexer(socket, socket)
     }
     // TODO Instead of `abend`, some sort of cleanup and recovery.
@@ -65,13 +72,26 @@ Rendezvous.prototype.upgrade = function (request, socket) {
     connections.add(parts, connection)
     paths.push(path)
 
-    //socket.once('error', function () { })
+    socket.on('error', close)
+    socket.on('close', close)
+    socket.on('end', close)
 
     function close () {
+        // TODO Why is this called twice?
+        logger.info('disconnecting', { path: path, $paths: paths })
         connection.multiplexer.destroy()
-        connections.remove(parts, connections.get(path)[0])
-        paths.splice(paths.indexOf(path), 1)
-        socket.destroy()
+        if (!socket.destroyed) {
+            socket.destroy()
+        }
+        var current = connections.get(parts).filter(function (connection) {
+            return connection.path == path
+        }).shift()
+        console.log(current && current.instance, instance)
+        if (current && current.instance == instance) {
+            connections.remove(parts, connection)
+            paths.splice(paths.indexOf(path), 1)
+        }
+        logger.info('disconnected', { path: path, $paths: paths })
     }
 
     return true
