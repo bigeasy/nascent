@@ -9,8 +9,6 @@ var Staccato = require('staccato')
 var Destructor = require('destructible')
 var Monotonic = require('monotonic').asString
 
-var logger = require('prolific.logger').createLogger('rendezvous')
-
 // Evented message queue.
 var Procession = require('procession')
 
@@ -78,7 +76,6 @@ Rendezvous.prototype.upgrade = function (request, socket) {
 
     function close () {
         // TODO Why is this called twice?
-        logger.info('disconnecting', { path: path, $paths: paths })
         connection.multiplexer.destroy()
         if (!socket.destroyed) {
             socket.destroy()
@@ -91,7 +88,6 @@ Rendezvous.prototype.upgrade = function (request, socket) {
             connections.remove(parts, connection)
             paths.splice(paths.indexOf(path), 1)
         }
-        logger.info('disconnected', { path: path, $paths: paths })
     }
 
     return true
