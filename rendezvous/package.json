@@ -22,6 +22,7 @@
     {
                             "abend":                        "1.0.x",
                             "conduit":                      "0.1.x",
+                            "cadence":                      "1.0.x",
                             "interlocutor":                 "0.1.x",
                             "nascent.coalesce":             "0.0.x",
                             "nascent.jacket":               "0.0.x",
