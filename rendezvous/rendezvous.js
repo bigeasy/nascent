@@ -31,7 +31,7 @@ Rendezvous.prototype.middleware = function (request, response, next) {
     var path = parsed.path.split('/')
     var connection = this._connections.match(path).pop()
     if (connection) {
-        var request = new Request(this, connection, request, response)
+        var request = new Request(connection, request, response)
         request.consume(function (error) { if (error) next(error) })
     } else {
         next()
@@ -93,8 +93,7 @@ Rendezvous.prototype.upgrade = function (request, socket) {
     return true
 }
 
-function Request (rendezvous, connection, request, response) {
-    this._rendezvous = rendezvous
+function Request (connection, request, response) {
     this._connection = connection
     this._request = request
     this._response = response
@@ -127,10 +126,7 @@ Request.prototype.consume = cadence(function (async) {
     location.pathname = location.pathname.substring(this._connection.path.length)
     location = url.format(location)
     async(function () {
-        this._connection.multiplexer.connect(async())
-    }, function (socket) {
-        this._spigot.emptyInto(socket.basin)
-        this._spigot.requests.enqueue({
+        this._connection.multiplexer.connect({
             module: 'rendezvous',
             method: 'header',
             body: {
@@ -142,7 +138,8 @@ Request.prototype.consume = cadence(function (async) {
                 rawHeaders: coalesce(this._request.rawHeaders, [])
             }
         }, async())
-    }, function () {
+    }, function (socket) {
+        this._spigot.emptyInto(socket.basin)
         var readable = new Staccato.Readable(this._request)
         var loop = async(function () {
             async(function () {

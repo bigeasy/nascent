@@ -38,26 +38,34 @@ function Envoy (middleware) {
     }.bind(this))
 }
 
-Envoy.prototype._connect = cadence(function (async, socket) {
-    socket.spigot.emptyInto(new Response(this).basin)
-    return []
+Envoy.prototype._connect = cadence(function (async, socket, envelope) {
+    // TODO Instead of abend, something that would stop the request.
+    new Response(this._interlocutor, socket, envelope).respond(async())
 })
 
-function Response (envoy) {
-    this._envoy = envoy
-    this.basin = new Basin(this)
+function Response (interlocutor, socket, envelope) {
+    var headers = envelope.body.headers
+    headers['sec-conduit-rendezvous-actual-path'] = envelope.body.actualPath
+    envelope.body.rawHeaders.push('sec-conduit-rendezvous-actual-path', envelope.body.actualPath)
+    this._request = interlocutor.request({
+        httpVersion: envelope.body.httpVersion,
+        method: envelope.body.method,
+        url: envelope.body.url,
+        headers: headers,
+        rawHeaders: envelope.body.rawHeaders
+    })
+    socket.spigot.emptyInto(this._basin = new Basin(this))
 }
 
-Response.prototype._respond = cadence(function (async, cookie) {
+Response.prototype.respond = cadence(function (async) {
     async(function () {
         delta(async()).ee(this._request).on('response')
     }, function (response) {
         async(function () {
-            this.basin.responses.enqueue({
+            this._basin.responses.enqueue({
                 module: 'rendezvous',
                 method: 'header',
                 body: {
-                    cookie: cookie,
                     statusCode: response.statusCode,
                     statusMessage: response.statusMessage,
                     headers: response.headers
@@ -72,25 +80,25 @@ Response.prototype._respond = cadence(function (async, cookie) {
                     if (buffer == null) {
                         return [ loop.break ]
                     }
-                    this.basin.responses.enqueue({
+                    this._basin.responses.enqueue({
                         module: 'rendezvous',
                         method: 'chunk',
-                        cookie: cookie,
                         body: buffer
                     }, async())
                 })
             })()
         }, function () {
             // TODO Use Conduit framing, use this only for actual trailers.
-            this.basin.responses.enqueue({
+            this._basin.responses.enqueue({
                 module: 'rendezvous',
                 method: 'trailer',
-                cookie: cookie,
                 body: null
             }, async())
         }, function () {
-            this.basin.responses.enqueue(null, async())
+            this._basin.responses.enqueue(null, async())
         })
+    }, function () {
+        return []
     })
 })
 
@@ -99,20 +107,6 @@ Response.prototype.fromBasin = cadence(function (async, envelope) {
         return []
     }
     switch (envelope.method) {
-    case 'header':
-        var headers = envelope.body.headers
-        headers['sec-conduit-rendezvous-actual-path'] = envelope.body.actualPath
-        envelope.body.rawHeaders.push('sec-conduit-rendezvous-actual-path', envelope.body.actualPath)
-        this._request = this._envoy._interlocutor.request({
-            httpVersion: envelope.body.httpVersion,
-            method: envelope.body.method,
-            url: envelope.body.url,
-            headers: headers,
-            rawHeaders: envelope.body.rawHeaders
-        })
-        // TODO Instead of abend, something that would stop the request.
-        this._respond(envelope.body.cookie, abend)
-        break
     case 'chunk':
         this._request.write(envelope.body, async())
         break
