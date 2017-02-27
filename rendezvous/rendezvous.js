@@ -3,11 +3,11 @@ var abend = require('abend')
 var cadence = require('cadence')
 var coalesce = require('nascent.coalesce')
 var WildMap = require('wildmap')
+var nop = require('nop')
 var url = require('url')
-var Spigot = require('conduit/spigot')
-var Staccato = require('staccato')
 var Destructor = require('destructible')
 var Monotonic = require('monotonic').asString
+var Request = require('./request')
 
 // Evented message queue.
 var Procession = require('procession')
@@ -31,7 +31,13 @@ Rendezvous.prototype.middleware = function (request, response, next) {
     var path = parsed.path.split('/')
     var connection = this._connections.match(path).pop()
     if (connection) {
-        var request = new Request(connection, request, response)
+        var request = new Request(connection.multiplexer, request, response, function (header) {
+            var location = url.parse(header.url)
+            var path = location.pathname
+            location.pathname = location.pathname.substring(connection.path.length)
+            location = url.format(location)
+            header.addHTTPHeader('x-rendezvous-actual-path', path)
+        })
         request.consume(function (error) { if (error) next(error) })
     } else {
         next()
@@ -91,79 +97,6 @@ Rendezvous.prototype.upgrade = function (request, socket) {
 
     return true
 }
-
-function Request (connection, request, response) {
-    this._connection = connection
-    this._request = request
-    this._response = response
-    this._spigot = new Spigot(this)
-}
-
-Request.prototype.fromSpigot = cadence(function (async, envelope) {
-    if (envelope == null) {
-        return []
-    }
-    switch (envelope.method) {
-    case 'header':
-        this._response.writeHead(envelope.body.statusCode,
-            envelope.body.statusMessage, envelope.body.headers)
-        break
-    case 'chunk':
-        this._response.write(envelope.body, async())
-        break
-    case 'trailer':
-        this._response.end()
-        break
-    }
-    return []
-})
-
-// http://stackoverflow.com/a/5426648
-Request.prototype.consume = cadence(function (async) {
-    var location = url.parse(this._request.url)
-    var path = location.pathname
-    location.pathname = location.pathname.substring(this._connection.path.length)
-    location = url.format(location)
-    async(function () {
-        this._connection.multiplexer.connect({
-            module: 'rendezvous',
-            method: 'header',
-            body: {
-                httpVersion: this._request.httpVersion,
-                method: this._request.method,
-                url: location,
-                headers: this._request.headers,
-                actualPath: path,
-                rawHeaders: coalesce(this._request.rawHeaders, [])
-            }
-        }, async())
-    }, function (socket) {
-        this._spigot.emptyInto(socket.basin)
-        var readable = new Staccato.Readable(this._request)
-        var loop = async(function () {
-            async(function () {
-                readable.read(async())
-            }, function (buffer) {
-                if (buffer == null) {
-                    return [ loop.break ]
-                }
-                this._spigot.requests.enqueue({
-                    module: 'rendezvous',
-                    method: 'chunk',
-                    body: buffer
-                }, async())
-            })
-        })()
-    }, function () {
-        this._spigot.requests.enqueue({
-            module: 'rendezvous',
-            method: 'trailer',
-            body: null
-        }, async())
-    }, function () {
-        this._spigot.requests.enqueue(null, async())
-    })
-})
 
 // TODO Maybe close is different from destroy?
 Rendezvous.prototype._close = cadence(function (async) {
