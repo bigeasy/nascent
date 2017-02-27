@@ -83,7 +83,6 @@ Rendezvous.prototype.upgrade = function (request, socket) {
         var current = connections.get(parts).filter(function (connection) {
             return connection.path == path
         }).shift()
-        console.log(current && current.instance, instance)
         if (current && current.instance == instance) {
             connections.remove(parts, connection)
             paths.splice(paths.indexOf(path), 1)
