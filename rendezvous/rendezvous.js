@@ -35,7 +35,7 @@ Rendezvous.prototype.middleware = function (request, response, next) {
             var location = url.parse(header.url)
             var path = location.pathname
             location.pathname = location.pathname.substring(connection.path.length)
-            request.url = url.format(location)
+            header.url = url.format(location)
             header.addHTTPHeader('x-rendezvous-actual-path', path)
         })
         request.consume(function (error) { if (error) next(error) })
