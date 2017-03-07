@@ -37,11 +37,10 @@ function Envoy (middleware) {
     }.bind(this))
 }
 
-// TODO Should not be async.
-Envoy.prototype._connect = cadence(function (async, socket, envelope) {
+Envoy.prototype._connect = function (socket, envelope) {
     // TODO Instead of abend, something that would stop the request.
     new Response(this._interlocutor, socket, envelope).respond(abend)
-})
+}
 
 // TODO Not sure exactly how to shutdown all the individual sockets but probably
 // they're going to have to see an end-of-stream and shutdown.
