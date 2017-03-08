@@ -4,8 +4,6 @@ var Staccato = require('staccato')
 
 function Response (interlocutor, socket, envelope) {
     var headers = envelope.body.headers
-    headers['sec-conduit-rendezvous-actual-path'] = envelope.body.actualPath
-    envelope.body.rawHeaders.push('sec-conduit-rendezvous-actual-path', envelope.body.actualPath)
     this._request = interlocutor.request({
         httpVersion: envelope.body.httpVersion,
         method: envelope.body.method,
