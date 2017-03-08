@@ -7,7 +7,7 @@ function prove (async, assert) {
     var Envoy = require('../envoy')
     var UserAgent = require('vizsla')
     var ua = new UserAgent
-    var Upgrader = require('nascent.upgrader/upgrade')
+    var Upgrader = require('downgrader')
     var upgrader = new Upgrader
     var sockets = []
     var rendezvous = new Rendezvous

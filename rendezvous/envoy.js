@@ -5,7 +5,7 @@ var coalesce = require('nascent.coalesce')
 
 var Interlocutor = require('interlocutor')
 var protocols = { http: require('http'), https: require('https') }
-var Upgrader = { Socket: require('nascent.upgrader/socket') }
+var Upgrader = { Socket: require('downgrader/socket') }
 var Reactor = require('reactor')
 
 var Header = require('nascent.jacket')
