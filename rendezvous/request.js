@@ -1,17 +1,16 @@
 var cadence = require('cadence')
-var Spigot = require('conduit/spigot')
 var Header = require('./header')
 var Staccato = require('staccato')
 
-function Request (multiplexer, request, response, rewrite) {
-    this._multiplexer = multiplexer
+function Request (client, request, response, rewrite) {
+    this._client = client
     this._request = request
     this._response = response
     this._rewrite = rewrite || nop
-    this._spigot = new Spigot(this)
+    this._socket = null
 }
 
-Request.prototype.fromSpigot = cadence(function (async, envelope) {
+Request.prototype.enqueue = cadence(function (async, envelope) {
     if (envelope == null) {
         return []
     }
@@ -35,13 +34,14 @@ Request.prototype.consume = cadence(function (async) {
     async(function () {
         var header = new Header(this._request)
         this._rewrite.call(null, header)
-        this._multiplexer.connect({
+        this._client.connect({
             module: 'rendezvous',
             method: 'header',
             body: header
         }, async())
     }, function (socket) {
-        this._spigot.emptyInto(socket.basin)
+        this._socket = socket
+        this._socket.read.pump(this)
         var readable = new Staccato.Readable(this._request)
         var loop = async(function () {
             async(function () {
@@ -50,7 +50,7 @@ Request.prototype.consume = cadence(function (async) {
                 if (buffer == null) {
                     return [ loop.break ]
                 }
-                this._spigot.requests.enqueue({
+                this._socket.write.enqueue({
                     module: 'rendezvous',
                     method: 'chunk',
                     body: buffer
@@ -58,13 +58,13 @@ Request.prototype.consume = cadence(function (async) {
             })
         })()
     }, function () {
-        this._spigot.requests.enqueue({
+        this._socket.write.enqueue({
             module: 'rendezvous',
             method: 'trailer',
             body: null
         }, async())
     }, function () {
-        this._spigot.requests.enqueue(null, async())
+        this._socket.write.enqueue(null, async())
     })
 })
 

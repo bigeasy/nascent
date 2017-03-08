@@ -11,8 +11,6 @@ var Reactor = require('reactor')
 var Header = require('nascent.jacket')
 var url = require('url')
 
-var Multiplexer = require('conduit/multiplexer')
-
 var Procession = require('procession')
 
 var Signal = require('signal')
@@ -21,6 +19,8 @@ var Destructor = require('destructible')
 
 var coalesce = require('nascent.coalesce')
 
+var Conduit = require('conduit')
+var Server = require('conduit/server')
 
 var Response = require('./response')
 
@@ -74,9 +74,12 @@ Envoy.prototype.connect = cadence(function (async, location) {
         // going to be listening for any final messages.
         // TODO How do you feel about `bind`?
         this._destructor.async(async, 'connect')(function () {
-            this._multiplexer = new Multiplexer(socket, socket, { object: this, method: '_connect' })
-            this._destructor.addDestructor('multiplexer', this._multiplexer.destroy.bind(this._multiplexer))
-            this._multiplexer.listen(head, async())
+            this._conduit = new Conduit(socket, socket)
+            this._server = new Server({
+                object: this, method: '_connect'
+            }, 'rendezvous', this._conduit.read, this._conduit.write)
+            this._destructor.addDestructor('conduit', this._conduit.destroy.bind(this._conduit))
+            this._conduit.listen(head, async())
         })
     })
 })

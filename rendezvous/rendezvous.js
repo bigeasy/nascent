@@ -8,11 +8,11 @@ var url = require('url')
 var Destructor = require('destructible')
 var Monotonic = require('monotonic').asString
 var Request = require('./request')
+var Conduit = require('conduit')
+var Client = require('conduit/client')
 
 // Evented message queue.
 var Procession = require('procession')
-
-var Multiplexer = require('conduit/multiplexer')
 
 function Rendezvous () {
     this._connections = new WildMap
@@ -31,7 +31,7 @@ Rendezvous.prototype.middleware = function (request, response, next) {
     var path = parsed.path.split('/')
     var connection = this._connections.match(path).pop()
     if (connection) {
-        var request = new Request(connection.multiplexer, request, response, function (header) {
+        var request = new Request(connection.client, request, response, function (header) {
             var location = url.parse(header.url)
             var path = location.pathname
             location.pathname = location.pathname.substring(connection.path.length)
@@ -64,15 +64,18 @@ Rendezvous.prototype.upgrade = function (request, socket) {
             connection.close.call(null)
         }
     })
+    var conduit = new Conduit(socket, socket)
+    var client = new Client('rendezvous', conduit.read, conduit.write)
     var connection = {
         path: path,
         close: close,
         socket: socket,
         instance: instance,
-        multiplexer: new Multiplexer(socket, socket)
+        conduit: conduit,
+        client: client
     }
     // TODO Instead of `abend`, some sort of cleanup and recovery.
-    connection.multiplexer.listen(abend)
+    connection.conduit.listen(abend)
     connections.add(parts, connection)
     paths.push(path)
 
@@ -82,7 +85,7 @@ Rendezvous.prototype.upgrade = function (request, socket) {
 
     function close () {
         // TODO Why is this called twice?
-        connection.multiplexer.destroy()
+        connection.conduit.destroy()
         if (!socket.destroyed) {
             socket.destroy()
         }
@@ -102,7 +105,7 @@ Rendezvous.prototype.upgrade = function (request, socket) {
 Rendezvous.prototype._close = cadence(function (async) {
     async.forEach(function (path) {
         this._connections.get(path.split('/')).forEach(function (connection) {
-            connection.multiplexer.destroy()
+            connection.conduit.destroy()
             connection.socket.destroy()
         })
     })(this.paths.slice(0, this.paths.length))

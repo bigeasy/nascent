@@ -1,5 +1,4 @@
 var cadence = require('cadence')
-var Basin = require('conduit/basin')
 var delta = require('delta')
 var Staccato = require('staccato')
 
@@ -14,7 +13,8 @@ function Response (interlocutor, socket, envelope) {
         headers: headers,
         rawHeaders: envelope.body.rawHeaders
     })
-    socket.spigot.emptyInto(this._basin = new Basin(this))
+    this._socket = socket
+    this._socket.read.pump(this)
 }
 
 Response.prototype.respond = cadence(function (async) {
@@ -22,7 +22,7 @@ Response.prototype.respond = cadence(function (async) {
         delta(async()).ee(this._request).on('response')
     }, function (response) {
         async(function () {
-            this._basin.responses.enqueue({
+            this._socket.write.enqueue({
                 module: 'rendezvous',
                 method: 'header',
                 body: {
@@ -40,7 +40,7 @@ Response.prototype.respond = cadence(function (async) {
                     if (buffer == null) {
                         return [ loop.break ]
                     }
-                    this._basin.responses.enqueue({
+                    this._socket.write.enqueue({
                         module: 'rendezvous',
                         method: 'chunk',
                         body: buffer
@@ -49,20 +49,20 @@ Response.prototype.respond = cadence(function (async) {
             })()
         }, function () {
             // TODO Use Conduit framing, use this only for actual trailers.
-            this._basin.responses.enqueue({
+            this._socket.write.enqueue({
                 module: 'rendezvous',
                 method: 'trailer',
                 body: null
             }, async())
         }, function () {
-            this._basin.responses.enqueue(null, async())
+            this._socket.write.enqueue(null, async())
         })
     }, function () {
         return []
     })
 })
 
-Response.prototype.fromBasin = cadence(function (async, envelope) {
+Response.prototype.enqueue = cadence(function (async, envelope) {
     if (envelope == null) {
         return []
     }
