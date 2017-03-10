@@ -32,8 +32,7 @@ function Envoy (middleware) {
     this._destructor.markDestroyed(this, 'destroyed')
     this._reactor = new Reactor({ object: this, method: '_respond' })
     this._destructor.addDestructor('connected', function () {
-        this.connected.notify()
-        this.connected.open = []
+        this.connected.unlatch()
     }.bind(this))
 }
 
@@ -67,9 +66,9 @@ Envoy.prototype.connect = cadence(function (async, location) {
             }
         }, async())
     }, function (request, socket, head) {
+        console.log('c---')
         this._destructor.addDestructor('socket', socket.destroy.bind(socket))
-        this.connected.notify()
-        this.connected.open = []
+        this.connected.unlatch()
         // Seems harsh, but once the multiplexer has been destroyed nothing is
         // going to be listening for any final messages.
         // TODO How do you feel about `bind`?
