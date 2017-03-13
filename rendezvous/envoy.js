@@ -11,8 +11,6 @@ var Reactor = require('reactor')
 var Header = require('nascent.jacket')
 var url = require('url')
 
-var Procession = require('procession')
-
 var Signal = require('signal')
 
 var Destructor = require('destructible')

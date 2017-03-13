@@ -11,9 +11,6 @@ var Request = require('./request')
 var Conduit = require('conduit')
 var Client = require('conduit/client')
 
-// Evented message queue.
-var Procession = require('procession')
-
 function Rendezvous () {
     this._connections = new WildMap
     this._destructor = new Destructor
