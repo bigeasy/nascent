@@ -21,7 +21,7 @@
     "dependencies":
     {
                             "abend":                        "1.0.x",
-                            "conduit":                      "0.3.x",
+                            "conduit":                      "0.4.0",
                             "cadence":                      "1.0.x",
                             "delta":                        "1.2.x",
                             "interlocutor":                 "0.1.x",
