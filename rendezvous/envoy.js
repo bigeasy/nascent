@@ -64,7 +64,6 @@ Envoy.prototype.connect = cadence(function (async, location) {
             }
         }, async())
     }, function (request, socket, head) {
-        console.log('c---')
         this._destructor.addDestructor('socket', socket.destroy.bind(socket))
         this.connected.unlatch()
         // Seems harsh, but once the multiplexer has been destroyed nothing is
