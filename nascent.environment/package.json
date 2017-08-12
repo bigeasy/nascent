@@ -1,6 +1,6 @@
 {
     "name":                 "nascent.environment",
-    "version":              "0.0.1",
+    "version":              "0.0.0",
     "description":
 
       "JSON as a network packet.",
