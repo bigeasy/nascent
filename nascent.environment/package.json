@@ -37,7 +37,7 @@
     "main":                 "jacket",
     "bin":
     {
-                            "environment":                  "environment.bin.js"
+                            "environmentd":                 "environment.bin.js"
     },
     "scripts":
     {
