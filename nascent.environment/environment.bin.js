@@ -8,6 +8,9 @@
             the interface and port to bind to or just the port and the daemon
             will bind to that port on all interfaces
 
+        -e, --exclude <string>
+            variables to exclude
+
         --help
             display this help message
 
@@ -29,8 +32,11 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var shuttle = Shuttle.shuttle(program, logger)
     destructible.addDestructor('shuttle', shuttle, 'close')
 
+    var env = JSON.parse(JSON.stringify(process.env))
+    program.grouped.exclude.forEach(function (exclude) { delete env[exclude] })
+
     var Middleware = require('./middleware')
-    var middleware = new Middleware(process.env)
+    var middleware = new Middleware(env)
 
     var http = require('http')
     var destroyer = require('server-destroy')
