@@ -1,6 +1,7 @@
 var coalesce = require('extant')
 var cadence = require('cadence')
 var Reactor = require('reactor')
+var logger = require('prolific.logger').createLogger('environmentd')
 
 function Middleware (env) {
     this.reactor = new Reactor(this, function (dispatcher) {
@@ -9,6 +10,20 @@ function Middleware (env) {
         dispatcher.dispatch('GET /value/:id', 'value')
         dispatcher.dispatch('GET /json', 'json')
         dispatcher.dispatch('GET /health', 'health')
+        dispatcher.logger = function (level, message, entry) {
+            if (entry.error) {
+                logger.info('environmentd', {
+                    url: entry.url,
+                    endpoint: entry.endpoint,
+                    stack: entry.error.stack
+                })
+            } else {
+                logger.info('environmentd', {
+                    url: entry.url,
+                    endpoint: entry.endpoint
+                })
+            }
+        }
     })
     this._env = JSON.parse(JSON.stringify(env))
 }
