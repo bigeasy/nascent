@@ -22,6 +22,7 @@ function Middleware (env) {
             }
         }
     })
+    this.reactor.turnstile.health.turnstiles = 1
     this._env = JSON.parse(JSON.stringify(env))
 }
 
@@ -48,6 +49,7 @@ Middleware.prototype.json = cadence(function (async) {
 
 Middleware.prototype.health = cadence(function (async, request) {
     request.entry.url = request.url
+    logger.info('health', { turnstile: this.reactor.turnstile.health })
     return { turnstile: this.reactor.turnstile.health }
 })
 

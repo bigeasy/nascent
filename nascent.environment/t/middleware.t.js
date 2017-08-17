@@ -20,7 +20,7 @@ function prove (async, okay) {
         middleware.health({ entry: {} }, async())
     }, function (health) {
         okay(health, {
-            turnstile: { occupied: 0, waiting: 0, rejecting: 0, turnstiles: 24 }
+            turnstile: { occupied: 0, waiting: 0, rejecting: 0, turnstiles: 1 }
         }, 'health')
     })
 }
