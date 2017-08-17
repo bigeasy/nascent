@@ -40,6 +40,7 @@ Middleware.prototype.keys = cadence(function (async, request) {
 
 Middleware.prototype.value = cadence(function (async, request, key) {
     request.entry.url = request.url
+    logger.info('value', { key: key, value: coalesce(this._env[key], '') + '\n' })
     return coalesce(this._env[key], '') + '\n'
 })
 
