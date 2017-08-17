@@ -18,27 +18,27 @@ function Middleware (env) {
                     stack: entry.error.stack
                 })
             } else {
-                logger.info('environmentd', {
-                    url: entry.url,
-                    endpoint: entry.endpoint
-                })
+                logger.info('request', { url: entry.url })
             }
         }
     })
     this._env = JSON.parse(JSON.stringify(env))
 }
 
-Middleware.prototype.index = cadence(function () {
+Middleware.prototype.index = cadence(function (async, request) {
+    request.entry.url = request.url
     return 'Environment API\n'
 })
 
-Middleware.prototype.keys = cadence(function () {
+Middleware.prototype.keys = cadence(function (async, request) {
+    request.entry.url = request.url
     var keys = Object.keys(this._env).sort()
     keys.push('')
     return keys.join('\n')
 })
 
 Middleware.prototype.value = cadence(function (async, request, key) {
+    request.entry.url = request.url
     return coalesce(this._env[key], '') + '\n'
 })
 
@@ -46,7 +46,8 @@ Middleware.prototype.json = cadence(function (async) {
     return this._env
 })
 
-Middleware.prototype.health = cadence(function () {
+Middleware.prototype.health = cadence(function (async, request) {
+    request.entry.url = request.url
     return { turnstile: this.reactor.turnstile.health }
 })
 
