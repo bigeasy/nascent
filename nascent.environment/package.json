@@ -27,7 +27,7 @@
                             "extant":                       "1.0.x",
                             "prolific.logger":              "5.0.x",
                             "prolific.shuttle":             "11.0.x",
-                            "reactor":                      "5.0.x",
+                            "reactor":                      "7.0.x",
                             "server-destroy":               "1.0.1"
     },
     "devDependencies":
