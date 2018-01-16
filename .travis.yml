@@ -16,4 +16,4 @@ before_install:
   # Echo trickery prevents an error return from `[ -e $dir/package.json ]` from erroring the Travis CI build.
   - for dir in $(find . -maxdepth 1 -type d -a ! -name .\*); do [ -e $dir/package.json ] && (cd $dir && npm install && echo $dir) || echo $dir; done
   - npm install
-  - npm install istanbul coveralls
+  - npm install -g istanbul coveralls
