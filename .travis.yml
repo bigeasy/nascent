@@ -13,7 +13,8 @@ branches:
     - travis-ci
 
 before_install:
+  - npm install -g npm
   # Echo trickery prevents an error return from `[ -e $dir/package.json ]` from erroring the Travis CI build.
-  - for dir in $(find . -maxdepth 1 -type d -a ! -name .\*); do [ -e $dir/package.json ] && (cd $dir && npm install && echo $dir) || echo $dir; done
-  - npm install
+  - for dir in $(find . -maxdepth 1 -type d -a ! -name .\*); do [ -e $dir/package.json ] && (cd $dir && npm install --no-save --no-package-lock && echo $dir) || echo $dir; done
+  - npm install --no-save --no-package-lock
   - npm install -g istanbul coveralls
