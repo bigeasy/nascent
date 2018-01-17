@@ -1,6 +1,6 @@
 {
     "name":                 "nascent.jacket",
-    "version":              "0.0.3",
+    "version":              "0.0.4",
     "description":
 
       "JSON as a network packet.",
