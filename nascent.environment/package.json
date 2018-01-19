@@ -15,7 +15,7 @@
     "license":              "MIT",
     "repository":
     {
-                            "url": "git://github.com/bigeasy/nascent.git",
+                            "url": "bigeasy/nascent",
                             "type": "git"
     },
     "dependencies":
