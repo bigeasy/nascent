@@ -1,7 +1,8 @@
 /.wiseguy
 /docs
 /node_modules
-/.proof.out
 /coverage
+/.nyc_output
+/*/.nyc_output
 /*/coverage
 /*/node_modules
